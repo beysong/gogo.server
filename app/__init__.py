@@ -1,32 +1,21 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from decimal import Decimal
-import json
+from .config import config
+from .extensions import db, migrate, ma, jwt, login_manager
 
-db = SQLAlchemy()
-migrate = Migrate()
 
-def create_app(config_filename=None):
+def create_app(config_name='dev'):
     app = Flask(__name__)
-    # app.json_encoder = CustomJSONEncoder
 
-    if config_filename:
-        app.config.from_pyfile(config_filename)
-    
+    # 加载配置
+    app.config.from_object(config.get(config_name, 'dev'))
+        
     db.init_app(app)
+    ma.init_app(app)
     migrate.init_app(app, db)
+    jwt.init_app(app)
     
     from .routes import main_bp
     app.register_blueprint(main_bp)
     
     return app
 
-
-# 自定义 JSON 编码器
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            # 将 Decimal 转换为 float
-            return float(obj)  # 或者使用 str(obj) 将其转换为字符串
-        return super().default(obj)

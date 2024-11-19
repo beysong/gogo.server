@@ -1,2 +1,2 @@
-FLASK_ENV=prod
+FLASK_ENV=dev
 FLASK_APP=manage.py
